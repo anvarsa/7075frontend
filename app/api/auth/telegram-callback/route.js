@@ -14,9 +14,9 @@ export async function GET(request) {
   }
 
   try {
-    // 1. Drivers jadvalidan qidiramiz
+    // 1. drivers jadvalidan qidiramiz (kichik harfda)
     const drivers = await directus.request(
-      readItems('Drivers', {
+      readItems('drivers', {
         filter: {
           id: { _eq: id }
         }
@@ -27,9 +27,9 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/driver/dashboard', request.url));
     }
 
-    // 2. Passengers jadvalidan qidiramiz
+    // 2. passengers jadvalidan qidiramiz (kichik harfda)
     const passengers = await directus.request(
-      readItems('Passengers', {
+      readItems('passengers', {
         filter: {
           id: { _eq: id }
         }
