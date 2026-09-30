@@ -7,7 +7,7 @@ export async function GET(request) {
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   
-  // Telegram'dan kelgan ma'lumotlar
+  // Telegram'dan kelgan barcha parametrlarni olamiz
   const id = searchParams.get('id');
   const first_name = searchParams.get('first_name');
   const username = searchParams.get('username');
@@ -18,8 +18,7 @@ export async function GET(request) {
   }
 
   try {
-    // Bu yerda foydalanuvchini Directus bazasidan qidirish yoki ro'yxatdan o'tkazish logikasi bo'ladi
-    // Masalan, foydalanuvchi bazada bormi tekshiramiz:
+    // Foydalanuvchini Directus bazasidan telegram_id bo'yicha qidiramiz
     const users = await directus.request(
       readItems('users', {
         filter: {
@@ -28,8 +27,23 @@ export async function GET(request) {
       })
     );
 
-    // Agar foydalanuvchi topilsa yoki yangi yaratilsa, sessiya ochib dashboard'ga yo'naltiramiz
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    if (!users || users.length === 0) {
+      // Agar foydalanuvchi bazada topilmasa, ro'yxatdan o'tish sahifasiga yoki xatolikka yo'naltiramiz
+      return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
+    }
+
+    const user = users[0];
+    const role = user.role; // Foydalanuvchi roli (masalan: driver yoki passenger)
+
+    // Roliga qarab tegishli dashboard'ga yo'naltiramiz
+    if (role === 'driver') {
+      return NextResponse.redirect(new URL('/driver/dashboard', request.url));
+    } else if (role === 'passenger') {
+      return NextResponse.redirect(new URL('/passenger/dashboard', request.url));
+    } else {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+
   } catch (error) {
     console.error('Telegram auth error:', error);
     return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
