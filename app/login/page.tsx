@@ -7,15 +7,19 @@ export default function LoginPage() {
   const telegramContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Telegram widget scriptini dinamik ravishda qo'shamiz
+    // Agar oldindan skript qo'shilgan bo'lsa, takrorlanishining oldini olamiz
+    if (telegramContainerRef.current && telegramContainerRef.current.hasChildNodes()) {
+      return;
+    }
+
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
     script.async = true;
     
-    // Bot nomini o'zingizning botingiz userneymi bilan almashtirasiz (masalan: @SizningBotingiz)
-    script.setAttribute('data-telegram-login', 'a1a1b1b1bot');
+    script.setAttribute('data-telegram-login', 'a1a1b1b1bot'); 
     script.setAttribute('data-size', 'large');
-    script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`); // Telegram ma'lumotni yuboradigan manzil
+    // To'g'ridan-to'g'ri Next.js ichidagi callback manzilini ko'rsatamiz:
+    script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`); 
     script.setAttribute('data-request-access', 'write');
 
     if (telegramContainerRef.current) {
