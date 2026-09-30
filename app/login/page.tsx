@@ -1,45 +1,29 @@
-// app/login/page.tsx
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 export default function LoginPage() {
-  const telegramContainerRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    // Agar element ichida allaqachon skript bo'lsa, takror qo'shilmasligi uchun
-    if (telegramContainerRef.current && telegramContainerRef.current.hasChildNodes()) {
-      return;
-    }
-
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
     script.async = true;
-    
-    // Bot username'ingiz
-    script.setAttribute('data-telegram-login', 'a1a1b1b1bot'); 
+    script.setAttribute('data-telegram-login', 'YOUR_BOT_USERNAME'); // <-- Bot nomingizni yozing
     script.setAttribute('data-size', 'large');
-    
-    // Ma'lumot kelib tushadigan Next.js API manzili
-    script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`); 
+    script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`);
     script.setAttribute('data-request-access', 'write');
 
-    if (telegramContainerRef.current) {
-      telegramContainerRef.current.appendChild(script);
+    const container = document.getElementById('telegram-login-container');
+    if (container) {
+      container.innerHTML = '';
+      container.appendChild(script);
     }
   }, []);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif', background: '#f9f9f9' }}>
-      <div style={{ padding: '40px', background: '#fff', border: '1px solid #eaeaea', borderRadius: '12px', width: '380px', textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
-        <h2 style={{ marginBottom: '10px', color: '#333' }}>Tizimga kirish</h2>
-        <p style={{ color: '#666', fontSize: '14px', marginBottom: '30px' }}>
-          Taxi xizmatidan foydalanish uchun Telegram orqali kiring
-        </p>
-
-        {/* Telegram widget tugmasi chiqadigan joy */}
-        <div ref={telegramContainerRef} style={{ display: 'flex', justifyContent: 'center' }} />
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
+      <h1>Tizimga kirish</h1>
+      <p style={{ marginBottom: '20px' }}>Telegram orqali avtorizatsiyadan o'ting</p>
+      <div id="telegram-login-container"></div>
     </div>
   );
 }

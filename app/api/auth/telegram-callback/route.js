@@ -1,4 +1,3 @@
-// app/api/auth/telegram-callback/route.js
 import { NextResponse } from 'next/server';
 import directus from '@/lib/directus';
 import { readItems } from '@directus/sdk';
@@ -15,11 +14,11 @@ export async function GET(request) {
   }
 
   try {
-    // 1. Avval Drivers jadvalidan qidirib ko'ramiz
+    // 1. Drivers jadvalidan qidiramiz
     const drivers = await directus.request(
       readItems('Drivers', {
         filter: {
-          id: { _eq: id } // Bazadagi ID maydoni Telegram ID bilan bir xil ko'rinadi
+          id: { _eq: id }
         }
       })
     );
@@ -28,7 +27,7 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/driver/dashboard', request.url));
     }
 
-    // 2. Agar driver topilmasa, Passengers jadvalidan qidiramiz
+    // 2. Passengers jadvalidan qidiramiz
     const passengers = await directus.request(
       readItems('Passengers', {
         filter: {
@@ -41,11 +40,11 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/passenger/dashboard', request.url));
     }
 
-    // 3. Ikkala jadvalda ham bo'lmasa
+    // 3. Topilmasa
     return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
 
   } catch (error) {
-    console.error('Telegram auth error:', error.message || error);
-    return NextResponse.redirect(new URL(`/login?error=server_error&details=${encodeURIComponent(error.message || 'unknown')}`, request.url));
+    console.error('Telegram auth error:', error);
+    return NextResponse.redirect(new URL('/login?error=server_error', request.url));
   }
 }
