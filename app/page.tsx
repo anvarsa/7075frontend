@@ -1,45 +1,37 @@
-// app/login/page.jsx
-'use client';
+// app/api/auth/telegram-callback/route.js
+import { NextResponse } from 'next/server';
+import directus from '@/lib/directus';
+import { readItems } from '@directus/sdk';
 
-export default function LoginPage() {
-  const handleLogin = (provider) => {
-    const directusUrl = process.env.NEXT_PUBLIC_DIRECTUS_URL;
-    // Autentifikatsiyadan so'ng bizning /api/auth/callback sahifasiga qaytadi
-    const redirectUrl = `${window.location.origin}/api/auth/callback`;
-    window.location.href = `${directusUrl}/auth/login/${provider}?redirect=${encodeURIComponent(redirectUrl)}`;
-  };
+export async function GET(request) {
+  const url = new URL(request.url);
+  const searchParams = url.searchParams;
+  
+  // Telegram'dan kelgan ma'lumotlar
+  const id = searchParams.get('id');
+  const first_name = searchParams.get('first_name');
+  const username = searchParams.get('username');
+  const hash = searchParams.get('hash');
 
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
-      <div style={{ padding: '30px', border: '1px solid #ddd', borderRadius: '10px', width: '350px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ marginBottom: '20px' }}>Tizimga kirish</h2>
-        <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-          Haydovchi yoki yo'lovchi sifatida davom eting
-        </p>
+  if (!id || !hash) {
+    return NextResponse.redirect(new URL('/login?error=invalid_telegram_data', request.url));
+  }
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <button 
-            onClick={() => handleLogin('google')}
-            style={{ padding: '10px', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '5px', background: '#fff' }}
-          >
-            🌐 Google bilan kirish
-          </button>
-          
-          <button 
-            onClick={() => handleLogin('facebook')}
-            style={{ padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '5px', background: '#1877F2', color: '#fff' }}
-          >
-            📘 Facebook bilan kirish
-          </button>
+  try {
+    // Bu yerda foydalanuvchini Directus bazasidan qidirish yoki ro'yxatdan o'tkazish logikasi bo'ladi
+    // Masalan, foydalanuvchi bazada bormi tekshiramiz:
+    const users = await directus.request(
+      readItems('users', {
+        filter: {
+          telegram_id: { _eq: id }
+        }
+      })
+    );
 
-          <button 
-            onClick={() => handleLogin('telegram')}
-            style={{ padding: '10px', cursor: 'pointer', border: 'none', borderRadius: '5px', background: '#229ED9', color: '#fff' }}
-          >
-            ✈️ Telegram bilan kirish
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+    // Agar foydalanuvchi topilsa yoki yangi yaratilsa, sessiya ochib dashboard'ga yo'naltiramiz
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  } catch (error) {
+    console.error('Telegram auth error:', error);
+    return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
+  }
 }
