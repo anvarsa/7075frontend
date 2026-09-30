@@ -14,7 +14,7 @@ export async function GET(request) {
   }
 
   try {
-    // 1. drivers jadvalidan qidiramiz (kichik harfda)
+    // 1. drivers jadvalidan qidiramiz
     const drivers = await directus.request(
       readItems('drivers', {
         filter: {
@@ -27,7 +27,7 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/driver/dashboard', request.url));
     }
 
-    // 2. passengers jadvalidan qidiramiz (kichik harfda)
+    // 2. passengers jadvalidan qidiramiz
     const passengers = await directus.request(
       readItems('passengers', {
         filter: {
@@ -44,7 +44,8 @@ export async function GET(request) {
     return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
 
   } catch (error) {
-    console.error('Telegram auth error:', error);
-    return NextResponse.redirect(new URL('/login?error=server_error', request.url));
+    // Xatolikni to'g'ridan-to'g'ri URL orqali brauzerga chiqaramiz (vaqtincha)
+    const errorMessage = encodeURIComponent(error.message || JSON.stringify(error));
+    return NextResponse.redirect(new URL(`/login?error=${errorMessage}`, request.url));
   }
 }
