@@ -13,7 +13,7 @@ export default function LoginPage() {
     script.async = true;
     
     // Bot nomini o'zingizning botingiz userneymi bilan almashtirasiz (masalan: @SizningBotingiz)
-    script.setAttribute('data-telegram-login', 'SIZNING_BOT_USERNAME'); 
+    script.setAttribute('data-telegram-login', 'a1a1b1b1bot');
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`); // Telegram ma'lumotni yuboradigan manzil
     script.setAttribute('data-request-access', 'write');
