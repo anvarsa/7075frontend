@@ -1,30 +1,26 @@
+// app/api/auth/telegram-callback/route.js
+import { NextResponse } from 'next/server';
 import directus from '@/lib/directus';
 import { readItems } from '@directus/sdk';
-import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 export async function GET(request) {
-  const { searchParams } = new URL(request.url);
+  const url = new URL(request.url);
+  const searchParams = url.searchParams;
   
-  // Telegram'dan kelgan ma'lumotlar
   const id = searchParams.get('id');
-  const firstName = searchParams.get('first_name');
-  const username = searchParams.get('username');
   const hash = searchParams.get('hash');
-  
-  // Eslatma: Xavfsizlik uchun hash'ni tekshirish mumkin (Bot token orqali), 
-  // lekin hozircha asosiy mantiqni ulab ko'ramiz:
 
-  if (!id) {
-    return NextResponse.redirect(new URL('/login?error=telegram_failed', request.url));
+  if (!id || !hash) {
+    return NextResponse.redirect(new URL('/login?error=invalid_telegram_data', request.url));
   }
 
   try {
-    // 1. Bazadagi 'drivers' yoki 'passengers' jadvalidan Telegram ID yoki username bo'yicha qidiramiz
-    // (Buning uchun bazangizdagi jadvallarda telegram_id ustuni bo'lishi kerak)
+    // 1. Avval Drivers jadvalidan qidirib ko'ramiz
     const drivers = await directus.request(
-      readItems('drivers', {
-        filter: { telegram_id: { _eq: id } }
+      readItems('Drivers', {
+        filter: {
+          id: { _eq: id } // Bazadagi ID maydoni Telegram ID bilan bir xil ko'rinadi
+        }
       })
     );
 
@@ -32,9 +28,12 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/driver/dashboard', request.url));
     }
 
+    // 2. Agar driver topilmasa, Passengers jadvalidan qidiramiz
     const passengers = await directus.request(
-      readItems('passengers', {
-        filter: { telegram_id: { _eq: id } }
+      readItems('Passengers', {
+        filter: {
+          id: { _eq: id }
+        }
       })
     );
 
@@ -42,11 +41,11 @@ export async function GET(request) {
       return NextResponse.redirect(new URL('/passenger/dashboard', request.url));
     }
 
-    // Agar bazada topilmasa, ro'yxatdan o'tish sahifasiga yuboramiz
-    return NextResponse.redirect(new URL(`/register/complete?telegram_id=${id}&name=${firstName}`, request.url));
+    // 3. Ikkala jadvalda ham bo'lmasa
+    return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
 
   } catch (error) {
-    console.error('Telegram auth error:', error);
-    return NextResponse.redirect(new URL('/login?error=server_error', request.url));
+    console.error('Telegram auth error:', error.message || error);
+    return NextResponse.redirect(new URL(`/login?error=server_error&details=${encodeURIComponent(error.message || 'unknown')}`, request.url));
   }
 }
