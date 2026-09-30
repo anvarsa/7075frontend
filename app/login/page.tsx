@@ -7,7 +7,7 @@ export default function LoginPage() {
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?22';
     script.async = true;
-    script.setAttribute('data-telegram-login', '@a1a1b1b1bot.'); // <-- Bot nomingizni yozing
+    script.setAttribute('data-telegram-login', 'a1a1b1b1bot.'); // <-- Bot nomingizni yozing
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-auth-url', `${window.location.origin}/api/auth/telegram-callback`);
     script.setAttribute('data-request-access', 'write');
