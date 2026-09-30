@@ -1,26 +1,45 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --night: #f2f5fa;
+  --night2: #ffffff;
+  --night3: #e7eef7;
+  --asphalt: #cdd8e6;
+  --line: rgba(24, 48, 84, .15);
+  --tg: #0a84c6;
+  --amber-ink: #8a5200;
+  --ok: #0e9a60;
+  --danger: #d63a3a;
+  --paper: #12203a;
+  --muted: #4a5d78;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--night);
+  color: var(--paper);
+  font-family: 'Onest', system-ui, sans-serif;
+  margin: 0;
 }
+
+.card {
+  background: var(--night2);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(20, 40, 80, .07);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 14px;
+  padding: 13px 22px;
+  font-weight: 600;
+  background: var(--night3);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.btn.amber { background: #ffb627; color: #1a1100; }
+.btn.tg { background: var(--tg); color: #fff; }
