@@ -7,10 +7,8 @@ export async function GET(request) {
   const url = new URL(request.url);
   const searchParams = url.searchParams;
   
-  // Telegram'dan kelgan barcha parametrlarni olamiz
+  // Telegram'dan kelgan parametrlarni olamiz
   const id = searchParams.get('id');
-  const first_name = searchParams.get('first_name');
-  const username = searchParams.get('username');
   const hash = searchParams.get('hash');
 
   if (!id || !hash) {
@@ -18,53 +16,37 @@ export async function GET(request) {
   }
 
   try {
-    // Foydalanuvchini Directus bazasidan telegram_id bo'yicha qidiramiz
-    const users = await directus.request(
-      readItems('users', {
+    // 1. Avval 'Drivers' jadvalidan qidirib ko'ramiz
+    const drivers = await directus.request(
+      readItems('Drivers', {
         filter: {
-          telegram_id: { _eq: id }
+          id: { _eq: id }
         }
       })
     );
 
-    if (!users || users.length === 0) {
-      // Agar foydalanuvchi bazada topilmasa, ro'yxatdan o'tish sahifasiga yoki xatolikka yo'naltiramiz
-      return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
-    }
-
-    const user = users[0];
-    const role = user.role; // Foydalanuvchi roli (masalan: driver yoki passenger)
-
-    // Roliga qarab tegishli dashboard'ga yo'naltiramiz
-    if (role === 'driver') {
+    if (drivers && drivers.length > 0) {
       return NextResponse.redirect(new URL('/driver/dashboard', request.url));
-    } else if (role === 'passenger') {
-      return NextResponse.redirect(new URL('/passenger/dashboard', request.url));
-    } else {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+
+    // 2. Agar driver topilmasa, 'Passengers' jadvalidan qidiramiz
+    const passengers = await directus.request(
+      readItems('Passengers', {
+        filter: {
+          id: { _eq: id }
+        }
+      })
+    );
+
+    if (passengers && passengers.length > 0) {
+      return NextResponse.redirect(new URL('/passenger/dashboard', request.url));
+    }
+
+    // 3. Ikkala jadvalda ham topilmasa
+    return NextResponse.redirect(new URL('/login?error=user_not_found', request.url));
 
   } catch (error) {
     console.error('Telegram auth error:', error);
     return NextResponse.redirect(new URL('/login?error=auth_failed', request.url));
   }
-}
-
-
-// app/page.tsx
-'use client';
-
-export default function HomePage() {
-  return (
-    <main style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'sans-serif' }}>
-      <h1>Xush kelibsiz!</h1>
-      <p style={{ marginTop: '10px' }}>Tizimga kirish uchun quyidagi tugmani bosing:</p>
-      <a 
-        href="/login" 
-        style={{ marginTop: '20px', padding: '10px 20px', background: '#0088cc', color: '#fff', borderRadius: '5px', textDecoration: 'none' }}
-      >
-        Kirish (Login)
-      </a>
-    </main>
-  );
 }
